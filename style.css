@@ -1,0 +1,143 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+/* explicit layers, bottom to top: camera 0, paint 1, panel 5, cursor 10.
+   Safari draws a transformed <video> above the page unless everything
+   over it is also its own layer (translateZ) with a higher z-index */
+canvas {
+  display: block;
+  position: relative;
+  z-index: 1;
+  transform: translateZ(0);
+}
+.cursor {
+  width: 20px;
+  height: 20px;
+  margin: -11px 0 0 -11px;
+  border: 1px solid #444;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  transform: translateZ(0);
+}
+.cursor.painting {
+  border-width: 3px;
+  margin: -13px 0 0 -13px;
+}
+.camera {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  transform: scaleX(-1);
+  z-index: 0;
+}
+
+/* panel - hold a pointing finger on a button for 2 seconds to pick it */
+#panel {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%) translateZ(0);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  z-index: 5;
+}
+.group {
+  display: grid;
+  grid-template-columns: repeat(4, 52px);
+  gap: 8px;
+}
+.tool {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.tool.selected {
+  border-color: #222;
+}
+/* fills up along the bottom while the fingertip holds still */
+.tool::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 6px;
+  width: calc(var(--dwell, 0) * 100%);
+  background: #222;
+}
+.icon {
+  width: 26px;
+  height: 26px;
+  background: #333;
+}
+.icon.circle {
+  border-radius: 50%;
+}
+.icon.triangle {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.swatch.auto {
+  background: conic-gradient(hsl(0 90% 55%), hsl(55 90% 55%), hsl(120 70% 45%), hsl(200 90% 55%), hsl(280 80% 60%), hsl(0 90% 55%));
+}
+
+/* colour picker - matches pickerColour() in sketch.js: hue across,
+   white fading out over the top half, black fading in over the bottom half */
+.tool.picker {
+  width: 232px;
+  height: 232px;
+  overflow: visible;
+  background:
+    linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, #000 100%),
+    linear-gradient(to right, hsl(0 95% 48%), hsl(60 95% 48%), hsl(120 95% 48%), hsl(180 95% 48%), hsl(240 95% 48%), hsl(300 95% 48%), hsl(360 95% 48%));
+}
+.picker .mark {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  box-sizing: border-box;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #222;
+  pointer-events: none;
+}
+
+/* brush size - the dark part of the wedge is the current size */
+.tool.slider {
+  width: 232px;
+  height: 64px;
+  display: block;
+}
+.slider .track {
+  position: absolute;
+  inset: 8px 10px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  clip-path: polygon(0 42%, 100% 0, 100% 100%, 0 58%);
+}
+.slider .fill {
+  height: 100%;
+  background: #333;
+}
+.slider .hover {
+  position: absolute;
+  top: 4px;
+  bottom: 8px;
+  width: 4px;
+  margin-left: -2px;
+  background: #e33;
+  border-radius: 2px;
+}
